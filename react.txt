@@ -1,0 +1,139 @@
+创建react
+
+（	在使用 create-react-app my-app 来创建一个新的React应用，在拉取各种资源时,往往会非常慢,一直卡在那：
+	fetchMetadata: sill mapToRegistry uri http://registry.npmjs.org/whatwg-fetch
+	可以看到资源还是使用了 npmjs.org，解决方法是换成淘宝的资源：
+	$ npm config set registry https://registry.npm.taobao.org
+	-- 配置后可通过下面方式来验证是否成功
+	$ npm config get registry
+	-- 或 npm info express
+）
+npm install -g create-react-app
+ create-react-app my-app
+进入项目路径
+cd my-app/
+ npm start
+
+
+以前使用JS 定义一个变量使用 var 现在用 const：const div = document.createElement('div');
+
+ReactDOM.render(...) 是渲染方法，所有的 js,html 都可通过它进行渲染绘制，他有两个参数，内容和渲染目标 js 对象。
+内容就是要在渲染目标中显示的东西，可以是一个React 部件，也可以是一段HTML或TEXT文本。渲染目标JS对象，
+就是一个DIV或TABEL,或TD 等HTML的节点对象。
+ReactDOM.render(<App />, div);
+
+unmountComponentAtNode() 这个方法是解除渲染挂载，作用和 render 刚好相反，也就清空一个渲染目标中的 React 部件或 html 内容。
+ReactDOM.unmountComponentAtNode(div);
+
+表单采用
+
+defaltValue 多选按钮 defaltCheck
+
+节点通过refs对象获取 <span refs="aa">    this.refs['aa']
+
+======================================================================================
+组件生命周期 - 创建阶段(Mounting)
+特点：该阶段的函数只执行一次
+constructor()
+作用：1 获取props 2 初始化state
+说明：通过 constructor() 的参数props获取
+设置state和props
+
+componentWillMount()
+说明：组件被挂载到页面之前调用，其在render()之前被调用，因此在这方法里同步地设置状态将不会触发重渲染
+注意：无法获取页面中的DOM对象
+注意：可以调用 setState() 方法来改变状态值
+用途：发送ajax请求获取数据
+
+componentDidMount(){}
+1 组件已经挂载到页面中
+2 可以进行DOM操作，比如：获取到组件内部的DOM对象
+3 可以发送请求获取数据
+4 可以通过 setState() 修改状态的值
+注意：在这里修改状态会重新渲染
+----------------------------------------------------------------
+组件生命周期 - 运行阶段（Updating）
+特点：该阶段的函数执行多次
+说明：每当组件的props或者state改变的时候，都会触发运行阶段的函数
+
+componentWillReceiveProps()
+说明：组件接受到新的props前触发这个方法
+参数：当前组件props值
+可以通过 this.props 获取到上一次的值
+使用：若你需要响应属性的改变，可以通过对比this.props和nextProps并在该方法中使用this.setState()处理状态改变
+注意：修改state不会触发该方法
+
+shouldComponentUpdate()
+作用：根据这个方法的返回值决定是否重新渲染组件，返回true重新渲染，否则不渲染
+优势：通过某个条件渲染组件，降低组件渲染频率，提升组件性能
+说明：如果返回值为false，那么，后续render()方法不会被调用
+注意：这个方法必须返回布尔值！！！
+场景：根据随机数决定是否渲染组件
+
+componentWillUpdate()
+作用：组件将要更新
+参数：最新的属性和状态对象
+注意：不能修改状态 否则会循环渲染
+
+componentDidUpdate()
+作用：组件已经被更新
+参数：旧的属性和状态对象
+---------------------------------------------------------------
+组件生命周期 - 卸载阶段（Unmounting）
+组件销毁阶段：组件卸载期间，函数比较单一，只有一个函数，这个函数也有一个显著的特点：组件一辈子只能执行依次！
+使用说明：只要组件不再被渲染到页面中，那么这个方法就会被调用（ 渲染到页面中 -> 不再渲染到页面中 ）
+componentWillUnmount()
+作用：在卸载组件的时候，执行清理工作，比如
+
+1 清除定时器
+2 清除componentDidMount创建的DOM对象
+
+
+es6中引入扩展运算符（...），它用于把一个数组转化为用逗号分隔的参数序列，
+它常用在不定参数个数时的函数调用，数组合并等情形。
+因为typeScript是es6的超集，所以typeScript也支持扩展运算符。
+
+----------------------------------------------------------------------------
+// 父组件
+class Parent extends React.Component {
+  testRef=(ref)=>{
+    this.child = ref
+    console.log(ref) // -> 获取整个Child元素
+  }
+  handleClick=()=>{
+    alert(this.child.state.info) // -> 通过this.child可以拿到child所有状态和方法
+  }
+  render() {
+    return <div>
+      <Child onRef={this.testRef} />
+      <button onClick={this.handleClick}>父组件按钮</button>
+    </div>
+  }
+}
+// 子组件
+class Child extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      info:'快点击子组件按钮哈哈哈'
+    }
+  }
+  componentDidMount(){
+    this.props.onRef(this)
+    console.log(this) // ->将child传递给this.props.onRef()方法
+  }
+  handleChildClick=()=>{
+    this.setState({info:'通过父组件按钮获取到子组件信息啦啦啦'})
+  } 
+  render(){
+    return <button onClick={this.handleChildClick}>子组件按钮</button>
+  }
+}
+原理：
+当在子组件中调用onRef函数时，正在调用从父组件传递的函数。this.props.onRef（this）这里的参数指向子组件本身，
+父组件接收该引用作为第一个参数：onRef = {ref =>（this.child = ref）}然后它使用this.child保存引用。
+之后，可以在父组件内访问整个子组件实例，并且可以调用子组件函数。
+
+父组件获取子组件数据可以利用props把获取数据的方法传递给子组件，
+父组件调用子组件方法李用onRef={(ref) => { this.child = ref }}把当前组件的this传到子组件中，
+再在父组件中利用( this.child.子组件的方法) 从而实现父组件调用子组件的方法
